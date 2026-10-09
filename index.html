@@ -60,7 +60,7 @@
  .orbit-layer .orbit-glint,.orbit-layer .orbit-flecks{animation:none!important}}
 
 
-/* V1.4 — independently spinning plasma globe, fixed orbit hardware, migrating lightning. */
+/* V1.5 — independently spinning plasma globe, fixed orbit hardware, migrating lightning. */
 .core-spin,.core-front-rings{position:absolute;top:20%;left:-7%;width:114%;height:76%;object-fit:contain;pointer-events:none;user-select:none}
 .core-spin{z-index:0;transform-origin:50% 44.25%;animation:plasmaSpin 27s linear infinite;opacity:.98;will-change:transform}
 .core-front-rings{z-index:2;opacity:.45;filter:drop-shadow(0 0 3px rgba(36,119,250,.32))}
@@ -77,7 +77,7 @@
 @keyframes plasmaGlobeSpin{from{transform:translate(-50%,-50%) rotate(0deg) scale(var(--coreScale,.38))}to{transform:translate(-50%,-50%) rotate(360deg) scale(var(--coreScale,.38))}}
 @media(prefers-reduced-motion:reduce){.core-spin{animation:none!important;transform:translate(-50%,-50%) scale(var(--coreScale,.38))}}
 
-/* V1.4 reactor interior: small core grows with output; ring structure stays fixed. */
+/* V1.5 reactor interior: small core grows with output; ring structure stays fixed. */
 .chamber[data-phase="running"] .core-spin{filter:drop-shadow(0 0 16px #536bff) drop-shadow(0 0 9px #bb53ff)}
 .chamber[data-phase="overload"]{box-shadow:inset 0 0 65px #640c30,0 12px 38px #6e1a3a55}
 .chamber[data-phase="overload"] .core-img{filter:brightness(.72) saturate(1.35) hue-rotate(104deg) drop-shadow(0 0 24px #c52967);animation:none}
@@ -90,7 +90,7 @@
 <header class="topbar">
   <div class="brand" aria-label="Plasma X">PLASMA <strong>X</strong></div>
   <div class="scorebox" aria-label="Best arcade score"><small>BEST SCORE</small><b id="bestScore">0000</b></div>
-  <button class="ico sound-off" id="soundBtn" aria-label="Enable sound" title="Sound"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></button>
+  <button class="ico" id="soundBtn" aria-label="Mute sound" title="Sound"><svg viewBox="0 0 24 24"><path d="M4 9v6h4l5 4V5L8 9z"/><path d="M17 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/></svg></button>
   <button class="ico" id="settingsBtn" aria-label="Open settings" title="Settings"><svg viewBox="0 0 24 24"><path d="M12 3 14 5l3-.4.8 3 2.7 1.3-1.1 3.1 1.1 3.1-2.7 1.3-.8 3-3-.4-2 2-2-2-3 .4-.8-3L3.5 15l1.1-3.1-1.1-3.1L6.2 7.5l.8-3L10 5z"/><circle cx="12" cy="12" r="3"/></svg></button>
 </header>
 <section class="chamber" id="chamber" data-phase="ready" data-critical="false" aria-label="Animated plasma reactor">
@@ -142,13 +142,13 @@
   <p class="hint" id="hint">Activate the core, then tap STABILIZE to prevent overload.</p>
 </section>
 <section class="history"><div class="heading"><span>LAST REACTOR RUNS</span><span class="sub" id="runCount">0 RUNS</span></div><div class="chips" id="history" aria-label="History of completed arcade runs"><span class="empty">No runs yet — activate the reactor!</span></div></section>
-<div class="footer-note">PLASMA X · NON-WAGERING ARCADE PROTOTYPE · V1.4</div>
+<div class="footer-note">PLASMA X · NON-WAGERING ARCADE PROTOTYPE · V1.5</div>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
   <div class="modal-card"><div class="modal-head"><span class="modal-title" id="settingsTitle">SYSTEM SETTINGS</span><button class="close" id="closeSettings" aria-label="Close settings">×</button></div>
-    <p>PLASMA X is a reactor-stabilization arcade demo. Watch the output rise, react to heat surges, and keep the energy core running. No wagering, money, or purchases.</p><hr>
-    <div class="setting-line"><span>Audio effects</span><button id="modalSound">OFF</button></div>
+    <p>Sound effects are enabled by default and start after your first tap. PLASMA X is a reactor-stabilization arcade demo. Watch the output rise, react to heat surges, and keep the energy core running. No wagering, money, or purchases.</p><hr>
+    <div class="setting-line"><span>Audio effects</span><button id="modalSound">ON</button></div>
     <div class="setting-line"><span>Full screen</span><button id="fullScreen">EXPAND</button></div>
     <div class="setting-line"><span>Arcade high score</span><b id="modalBest">0</b></div>
     <button class="reset" id="resetHistory">RESET SCORES &amp; HISTORY</button>
@@ -163,13 +163,89 @@
  const key='plasmax_arcade_v1';
  const safeLoad=()=>{try{return JSON.parse(localStorage.getItem(key))||{}}catch(e){return{}}};
  const persisted=safeLoad();
- const state={phase:'ready',difficulty:1,heat:15,multiplier:1,elapsed:0,best:Math.max(0,Number(persisted.best)||0),history:Array.isArray(persisted.history)?persisted.history.slice(0,8):[],runCount:Math.max(0,Number(persisted.runCount)||0),startAt:0,waitEnd:0,overloadEnd:0,nextSurgeAt:0,cooldownUntil:0,stabilizations:0,points:0,critical:false,sound:false,coreScale:.38,coreFlash:0,exploded:false};
+ const state={phase:'ready',difficulty:1,heat:15,multiplier:1,elapsed:0,best:Math.max(0,Number(persisted.best)||0),history:Array.isArray(persisted.history)?persisted.history.slice(0,8):[],runCount:Math.max(0,Number(persisted.runCount)||0),startAt:0,waitEnd:0,overloadEnd:0,nextSurgeAt:0,cooldownUntil:0,stabilizations:0,points:0,critical:false,sound:persisted.sound!==false,coreScale:.38,coreFlash:0,exploded:false};
  const difficultyNames=['LOW','MED','HIGH'];
  let lastTimestamp=0,lastCore='',toastTimer=0,context;
  const rng=(a,b)=>a+Math.random()*(b-a);
- function save(){try{localStorage.setItem(key,JSON.stringify({best:state.best,history:state.history,runCount:state.runCount}))}catch(e){}}
+ function save(){try{localStorage.setItem(key,JSON.stringify({best:state.best,history:state.history,runCount:state.runCount,sound:state.sound}))}catch(e){}}
  let debris=[];
-function audio(type){if(!state.sound)return;try{context=context||new(window.AudioContext||window.webkitAudioContext)();if(context.state==='suspended')context.resume();const now=context.currentTime;const osc=context.createOscillator(),gain=context.createGain();osc.connect(gain);gain.connect(context.destination);osc.type=type==='overload'?'sawtooth':'sine';osc.frequency.setValueAtTime(type==='tap'?660:type==='start'?180:360,now);osc.frequency.exponentialRampToValueAtTime(type==='overload'?72:type==='start'?500:360,now+(type==='overload'?.5:.15));gain.gain.setValueAtTime(.0001,now);gain.gain.exponentialRampToValueAtTime(type==='overload'?.07:.035,now+.02);gain.gain.exponentialRampToValueAtTime(.0001,now+(type==='overload'?.55:.19));osc.start(now);osc.stop(now+(type==='overload'?.59:.21))}catch(e){}}
+// PLASMA X V1.5 — procedurally synthesized soundscape, all offline & embedded.
+ // Sound starts only after a button press: modern mobile browsers block autoplay.
+ let humOsc=null,humHarmonic=null,humGain=null,humTone=null,noiseBuffer=null;
+ let nextCrackleAt=0,surgeAlerted=false,lastHumAt=0;
+ function ensureAudio(){
+   if(!state.sound||document.hidden)return null;
+   try{
+     if(!context){
+       const AudioCtor=window.AudioContext||window.webkitAudioContext;
+       if(!AudioCtor)return null;
+       context=new AudioCtor();
+       const seconds=.8, n=Math.round(context.sampleRate*seconds);
+       noiseBuffer=context.createBuffer(1,n,context.sampleRate);
+       const arr=noiseBuffer.getChannelData(0);
+       for(let i=0;i<n;i++)arr[i]=Math.random()*2-1;
+       humGain=context.createGain();humGain.gain.value=0;
+       humTone=context.createBiquadFilter();humTone.type='lowpass';humTone.frequency.value=280;
+       humTone.connect(humGain);humGain.connect(context.destination);
+       humOsc=context.createOscillator();humOsc.type='sawtooth';humOsc.frequency.value=61;
+       humHarmonic=context.createOscillator();humHarmonic.type='sine';humHarmonic.frequency.value=123;
+       const mainGain=context.createGain();mainGain.gain.value=.5;
+       const harmonicGain=context.createGain();harmonicGain.gain.value=.12;
+       humOsc.connect(mainGain);humHarmonic.connect(harmonicGain);
+       mainGain.connect(humTone);harmonicGain.connect(humTone);
+       humOsc.start();humHarmonic.start();
+     }
+     if(context.state==='suspended')context.resume().catch(()=>{});
+     return context;
+   }catch(e){return null}
+ }
+ function playTone(startHz,endHz,seconds,volume=.04,wave='sine',offset=0){
+   const a=ensureAudio();if(!a||a.state==='closed')return;
+   try{
+     const t=a.currentTime+offset,o=a.createOscillator(),g=a.createGain();
+     o.type=wave;o.frequency.setValueAtTime(Math.max(20,startHz),t);
+     o.frequency.exponentialRampToValueAtTime(Math.max(20,endHz),t+seconds);
+     g.gain.setValueAtTime(.0001,t);
+     g.gain.exponentialRampToValueAtTime(Math.max(.0001,volume),t+Math.min(.018,seconds*.25));
+     g.gain.exponentialRampToValueAtTime(.0001,t+seconds);
+     o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+seconds+.015);
+   }catch(e){}
+ }
+ function noiseBurst(duration=.12,volume=.018,highpass=700,delay=0){
+   const a=ensureAudio();if(!a||!noiseBuffer)return;
+   try{
+     const t=a.currentTime+delay,source=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+     source.buffer=noiseBuffer;source.loop=true;f.type='highpass';f.frequency.value=highpass;
+     g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(volume,t+.01);
+     g.gain.exponentialRampToValueAtTime(.0001,t+duration);
+     source.connect(f);f.connect(g);g.connect(a.destination);source.start(t);source.stop(t+duration+.018);
+   }catch(e){}
+ }
+ function audio(type){
+   if(!state.sound)return;
+   if(type==='start'){playTone(135,450,.48,.045,'triangle');playTone(270,610,.34,.016,'sine',.1)}
+   else if(type==='tap'){playTone(480,230,.16,.031,'sine');noiseBurst(.075,.011,1400)}
+   else if(type==='spark'){noiseBurst(.065,.012,2100);playTone(770,380,.075,.008,'triangle')}
+   else if(type==='surge'){playTone(300,610,.32,.035,'sawtooth');noiseBurst(.21,.016,1100)}
+   else if(type==='overload'){
+     playTone(160,39,.82,.095,'sawtooth');playTone(490,68,.63,.046,'triangle');
+     noiseBurst(.83,.086,90);noiseBurst(.29,.05,1500,.03);
+     noiseBurst(.32,.025,300,.27);
+   }
+ }
+ function updateHum(){
+   if(!state.sound||!humGain||!context)return;
+   const playing=state.phase==='running',starting=state.phase==='waiting';
+   const h=state.heat/100;
+   const vol=playing?(.009+.017*h):starting?.007:0;
+   const now=context.currentTime;
+   humGain.gain.setTargetAtTime(vol,now,playing?.13:.18);
+   humTone.frequency.setTargetAtTime(playing?200+h*420:220,now,.12);
+   humOsc.frequency.setTargetAtTime(playing?59+h*45:59,now,.15);
+   humHarmonic.frequency.setTargetAtTime(playing?119+h*80:119,now,.14);
+ }
+ function silenceHum(){if(humGain&&context&&context.state!=='closed')humGain.gain.setTargetAtTime(0,context.currentTime,.065)}
+
  function toast(msg){clearTimeout(toastTimer);els.toast.textContent=msg;els.toast.classList.add('visible');toastTimer=setTimeout(()=>els.toast.classList.remove('visible'),1850)}
  function refreshHistory(){els.history.replaceChildren();if(!state.history.length){const s=document.createElement('span');s.className='empty';s.textContent='No runs yet — activate the reactor!';els.history.append(s)}else state.history.forEach((item,i)=>{const span=document.createElement('span');span.className='history-chip '+(item.power>=8?'best':item.power>=4?'high':item.power>=2?'mid':'');span.textContent=Number(item.power).toFixed(2)+'x';span.title=item.score+' arcade points · '+Number(item.seconds).toFixed(1)+'s';els.history.append(span)});els.runCount.textContent=state.runCount+' '+(state.runCount===1?'RUN':'RUNS');els.best.textContent=String(state.best).padStart(4,'0');els.modalBest.textContent=String(state.best)}
  function setCore(which){if(lastCore!==which){lastCore=which;els.core.src=assets[which]}}
@@ -208,7 +284,9 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
  function showControls(){els.level.textContent=String(state.difficulty).padStart(2,'0')+' — '+difficultyNames[state.difficulty-1];const lock=state.phase==='running'||state.phase==='waiting'||state.phase==='overload';els.minus.disabled=lock||state.difficulty===1;els.plus.disabled=lock||state.difficulty===3;els.activate.disabled=lock;els.activate.textContent=state.phase==='ready'?(state.runCount?'RESTART':'ACTIVATE'):state.phase==='waiting'?'STARTING...':state.phase==='running'?'ACTIVE':'OVERLOAD';els.stabilize.disabled=state.phase!=='running';}
  function render(){
    const phase=state.phase,critical=phase==='running'&&(state.heat>=69||state.multiplier>=4);
-   if(state.critical!==critical){state.critical=critical;els.chamber.dataset.critical=String(critical)}
+   if(state.critical!==critical){state.critical=critical;els.chamber.dataset.critical=String(critical);
+     if(critical&&!surgeAlerted){surgeAlerted=true;audio('surge')}
+   }
    els.chamber.dataset.phase=phase;
    updateCoreScale();
    const power=state.multiplier.toFixed(2);
@@ -220,10 +298,10 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
    if(phase==='overload'){setCore('overload');els.status.textContent='CORE COLLAPSED';els.detail.textContent='RUN COMPLETE · +'+state.points+' ARCADE POINTS';els.hint.textContent='The reactor has shut down. Another run will be ready shortly.'}
  }
  function updatePhase(next){state.phase=next;showControls();render()}
- function begin(){if(state.phase!=='ready')return;state.multiplier=1;state.heat=13+state.difficulty*3;state.elapsed=0;state.stabilizations=0;state.points=0;state.exploded=false;debris=[];state.waitEnd=performance.now()+3000;updatePhase('waiting');audio('start')}
- function activate(){state.multiplier=1;state.elapsed=0;state.nextSurgeAt=rng(1.3,2.7);state.heat=14+state.difficulty*3;state.exploded=false;debris=[];updatePhase('running');audio('start')}
+ function begin(){if(state.phase!=='ready')return;state.multiplier=1;state.heat=13+state.difficulty*3;state.elapsed=0;state.stabilizations=0;state.points=0;state.exploded=false;surgeAlerted=false;debris=[];state.waitEnd=performance.now()+3000;updatePhase('waiting');audio('start')}
+ function activate(){state.multiplier=1;state.elapsed=0;state.nextSurgeAt=rng(1.3,2.7);state.heat=14+state.difficulty*3;state.exploded=false;debris=[];nextCrackleAt=performance.now()+450;updatePhase('running');audio('start')}
  function stabilize(){if(state.phase!=='running'||performance.now()<state.cooldownUntil)return;state.heat=Math.max(7,state.heat-(23-state.difficulty*2));state.cooldownUntil=performance.now()+190;state.stabilizations++;audio('tap');render()}
- function overload(){if(state.phase!=='running')return;state.points=Math.round((state.multiplier-1)*115+state.elapsed*7+state.stabilizations*3);state.exploded=true;spawnDebris();state.runCount++;state.best=Math.max(state.best,state.points);state.history.unshift({power:Number(state.multiplier.toFixed(2)),seconds:Number(state.elapsed.toFixed(1)),score:state.points});state.history.length=Math.min(state.history.length,8);save();refreshHistory();state.overloadEnd=performance.now()+2700;updatePhase('overload');audio('overload');toast('RUN COMPLETE · '+state.points+' POINTS')}
+ function overload(){if(state.phase!=='running')return;silenceHum();state.points=Math.round((state.multiplier-1)*115+state.elapsed*7+state.stabilizations*3);state.exploded=true;spawnDebris();state.runCount++;state.best=Math.max(state.best,state.points);state.history.unshift({power:Number(state.multiplier.toFixed(2)),seconds:Number(state.elapsed.toFixed(1)),score:state.points});state.history.length=Math.min(state.history.length,8);save();refreshHistory();state.overloadEnd=performance.now()+2700;updatePhase('overload');audio('overload');toast('RUN COMPLETE · '+state.points+' POINTS')}
  function tick(timestamp){if(!lastTimestamp)lastTimestamp=timestamp;const delta=Math.min(.067,(timestamp-lastTimestamp)/1000);lastTimestamp=timestamp;
    if(state.phase==='waiting'&&timestamp>=state.waitEnd)activate();
    if(state.phase==='running'){
@@ -232,15 +310,33 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
      state.heat+=delta*(4.5+state.difficulty*2.7+Math.min(6,state.multiplier*.45));
      if(state.elapsed>=state.nextSurgeAt){state.heat+=rng(7,15)+state.difficulty*2;state.nextSurgeAt=state.elapsed+rng(1.5,3.4);if(state.heat>65)audio('tap')}
      if(state.heat>=100){state.heat=100;overload()}
+     if(state.sound&&timestamp>=nextCrackleAt&&state.phase==='running'){
+       audio('spark');nextCrackleAt=timestamp+(state.critical?rng(250,510):rng(540,1050));
+     }
    }
    if(state.phase==='overload'&&timestamp>=state.overloadEnd){state.multiplier=1;state.heat=15;debris=[];blastAge=99;state.exploded=false;updatePhase('ready')}
+   if(timestamp-lastHumAt>100){updateHum();lastHumAt=timestamp}
    render();paint(delta);requestAnimationFrame(tick)
  }
  function modifyLevel(dir){if(state.phase!=='ready')return;state.difficulty=Math.max(1,Math.min(3,state.difficulty+dir));showControls();audio('tap')}
  els.activate.addEventListener('click',begin);els.stabilize.addEventListener('click',stabilize);
  els.minus.addEventListener('click',()=>modifyLevel(-1));els.plus.addEventListener('click',()=>modifyLevel(1));
- const setSound=()=>{state.sound=!state.sound;els.sound.classList.toggle('sound-off',!state.sound);els.sound.setAttribute('aria-label',state.sound?'Mute sound':'Enable sound');els.modalSound.textContent=state.sound?'ON':'OFF';audio('tap')};
+ const setSound=()=>{
+   state.sound=!state.sound;syncSound();save();
+   if(state.sound){ensureAudio();audio('tap');updateHum()}
+   else silenceHum();
+ };
+ function syncSound(){
+   els.sound.classList.toggle('sound-off',!state.sound);
+   els.sound.setAttribute('aria-label',state.sound?'Mute sound':'Enable sound');
+   els.modalSound.textContent=state.sound?'ON':'OFF';
+ }
+
  els.sound.addEventListener('click',setSound);els.modalSound.addEventListener('click',setSound);
+ document.addEventListener('visibilitychange',()=>{
+   if(document.hidden){silenceHum();context?.suspend?.().catch(()=>{})}
+   else if(state.sound&&context){context.resume().catch(()=>{});updateHum()}
+ });
  function openSettings(){els.modal.classList.add('open');els.close.focus()}function closeSettings(){els.modal.classList.remove('open');els.settings.focus()}
  els.settings.addEventListener('click',openSettings);els.close.addEventListener('click',closeSettings);els.modal.addEventListener('click',event=>{if(event.target===els.modal)closeSettings()});document.addEventListener('keydown',event=>{if(event.key==='Escape'&&els.modal.classList.contains('open'))closeSettings();if(event.code==='Space'&&!els.modal.classList.contains('open')&&state.phase==='running'&&!['BUTTON','INPUT'].includes(document.activeElement.tagName)){event.preventDefault();stabilize()}});
  els.reset.addEventListener('click',()=>{if(!confirm('Reset your local demo scores and run history?'))return;state.best=0;state.runCount=0;state.history=[];save();refreshHistory();toast('Scores reset')});
@@ -250,6 +346,62 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
  function sizeCanvas(){const r=els.chamber.getBoundingClientRect(),dpr=Math.min(2,window.devicePixelRatio||1);width=Math.max(1,r.width);height=Math.max(1,r.height);els.canvas.width=Math.round(width*dpr);els.canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);particles=Array.from({length:52},()=>({x:rng(0,width),y:rng(0,height),v:rng(5,24),size:rng(.45,1.7),alpha:rng(.12,.7)}))}
  const reduced=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+ // A high-voltage bridge runs from reactor metal to the changing core surface.
+ // Uses the same live core scale as the spinning image so bolts always land on the orb.
+ let beamClock=0;
+ const emitters=[
+   [.31,.355], [.68,.35], [.18,.52], [.82,.52], [.33,.755], [.68,.755], [.5,.335]
+ ];
+ function paintReactorBeams(delta){
+   if(state.phase==='overload')return;
+   beamClock+=delta;
+   const running=state.phase==='running';
+   const waiting=state.phase==='waiting';
+   const cx=width*.5,cy=height*.54;
+   const radius=Math.min(width*.265*state.coreScale,height*.21);
+   const number=running?(state.critical?5:4):waiting?2:1;
+   for(let i=0;i<emitters.length;i++){
+     const pos=emitters[i];
+     // Stagger activation of emitters; current visibly jumps between contacts.
+     const period=running?.72:1.45;
+     const cycle=beamClock/period + i*.397;
+     const flash=Math.sin(cycle*Math.PI*2 + i*.45);
+     if(flash<(running?-.24:.45)||i>=number+2)continue;
+     const intensity=Math.min(1,Math.max(0,(flash+.3)/1.25));
+     const sx=pos[0]*width,sy=pos[1]*height;
+     const angle=Math.atan2(sy-cy,sx-cx);
+     const tangent=Math.sin(beamClock*4+i*2)*.16;
+     const targetAngle=angle+tangent;
+     const ex=cx+Math.cos(targetAngle)*radius*.93;
+     const ey=cy+Math.sin(targetAngle)*radius*.93;
+     const dx=ex-sx,dy=ey-sy;
+     if(Math.hypot(dx,dy)<14)continue;
+     const segments=9;
+     const pts=[[sx,sy]];
+     for(let k=1;k<segments;k++){
+       const t=k/segments;
+       const wobble=Math.sin(beamClock*26+i*4.7+k*12.4)*5.5
+         +Math.sin(beamClock*42+k*3.45+i*9)*3.5;
+       const jitter=wobble*Math.sin(t*Math.PI);
+       const orthoX=-dy/(Math.hypot(dx,dy)||1),orthoY=dx/(Math.hypot(dx,dy)||1);
+       pts.push([sx+dx*t+orthoX*jitter,sy+dy*t+orthoY*jitter]);
+     }
+     pts.push([ex,ey]);
+     ctx.save();ctx.globalCompositeOperation='screen';
+     for(const [w,alpha,blur] of [[7,.12,23],[3.2,.36,13],[1.15,.85,5]]){
+       ctx.beginPath();pts.forEach(([x,y],k)=>k?ctx.lineTo(x,y):ctx.moveTo(x,y));
+       ctx.lineWidth=w;ctx.lineCap='round';ctx.lineJoin='round';
+       const a=alpha*intensity*(running?1:.65);
+       ctx.strokeStyle=i%2?`rgba(169,94,255,${a})`:`rgba(81,213,255,${a})`;
+       ctx.shadowColor=i%2?'#c27bff':'#52d6ff';ctx.shadowBlur=blur;
+       ctx.stroke();
+     }
+     ctx.shadowBlur=11;
+     ctx.beginPath();ctx.arc(ex,ey,2.9,0,Math.PI*2);
+     ctx.fillStyle=`rgba(226,245,255,${intensity*.94})`;ctx.fill();
+     ctx.restore();
+   }
+ }
  // Plasma lightning streams continually sweep around the spherical core.
  let electricTime=0;
  function paintPlasmaLightning(delta){
@@ -297,7 +449,7 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
      ctx.stroke();ctx.shadowBlur=0;
    }
  }
- function paint(delta){ctx.clearRect(0,0,width,height);if(reduced)return;const active=state.phase==='running';const failed=state.phase==='overload';for(const p of particles){p.y-=(active?1.5:1)*p.v*delta;p.x+=Math.sin(p.y*.025)*delta*4;if(p.y<0){p.y=height;p.x=rng(0,width)}ctx.fillStyle=failed?'rgba(255,110,92,'+p.alpha+')':active?'rgba(150,154,255,'+p.alpha+')':'rgba(69,151,250,'+p.alpha+')';ctx.beginPath();ctx.arc(p.x,p.y,p.size*(active?1.25:1),0,Math.PI*2);ctx.fill()}if(active&&Math.random()<.035){ctx.strokeStyle='rgba(166,125,255,.4)';ctx.lineWidth=1;const x=rng(width*.24,width*.75),y=rng(height*.35,height*.74);ctx.beginPath();ctx.moveTo(x-10,y-22);ctx.lineTo(x+5,y-5);ctx.lineTo(x-1,y+9);ctx.lineTo(x+16,y+28);ctx.stroke()}paintPlasmaLightning(delta);
+ function paint(delta){ctx.clearRect(0,0,width,height);if(reduced)return;const active=state.phase==='running';const failed=state.phase==='overload';for(const p of particles){p.y-=(active?1.5:1)*p.v*delta;p.x+=Math.sin(p.y*.025)*delta*4;if(p.y<0){p.y=height;p.x=rng(0,width)}ctx.fillStyle=failed?'rgba(255,110,92,'+p.alpha+')':active?'rgba(150,154,255,'+p.alpha+')':'rgba(69,151,250,'+p.alpha+')';ctx.beginPath();ctx.arc(p.x,p.y,p.size*(active?1.25:1),0,Math.PI*2);ctx.fill()}if(active&&Math.random()<.035){ctx.strokeStyle='rgba(166,125,255,.4)';ctx.lineWidth=1;const x=rng(width*.24,width*.75),y=rng(height*.35,height*.74);ctx.beginPath();ctx.moveTo(x-10,y-22);ctx.lineTo(x+5,y-5);ctx.lineTo(x-1,y+9);ctx.lineTo(x+16,y+28);ctx.stroke()}paintPlasmaLightning(delta);paintReactorBeams(delta);
    if(blastAge<2.65){
      blastAge+=delta;
      const bx=width*.5,by=height*.54;
@@ -343,7 +495,7 @@ function audio(type){if(!state.sound)return;try{context=context||new(window.Audi
    }
  }
  if('ResizeObserver'in window){new ResizeObserver(sizeCanvas).observe(els.chamber)}else window.addEventListener('resize',sizeCanvas);
- sizeCanvas();refreshHistory();showControls();updateCoreScale();render();requestAnimationFrame(tick);
+ sizeCanvas();refreshHistory();showControls();syncSound();updateCoreScale();render();requestAnimationFrame(tick);
 })();
 </script>
 </body>
