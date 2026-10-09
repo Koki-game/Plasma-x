@@ -168,7 +168,7 @@
   <p class="hint" id="hint">Press START, then COLLECT points before the core collapses. Your balance is never deducted.</p>
 </section>
 <section class="history"><div class="heading"><span>LAST REACTOR RUNS</span><span class="sub" id="runCount">0 RUNS</span></div><div class="chips" id="history" aria-label="History of completed arcade runs"><span class="empty">No runs yet — press START!</span></div></section>
-<div class="footer-note">PLASMA X · NON-WAGERING ARCADE PROTOTYPE · V1.9</div>
+<div class="footer-note">PLASMA X · NON-WAGERING ARCADE PROTOTYPE · V1.10</div>
 </main>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <div class="modal" id="settingsModal" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
@@ -250,7 +250,7 @@
      o.type=wave;o.frequency.setValueAtTime(Math.max(20,startHz),t);
      o.frequency.exponentialRampToValueAtTime(Math.max(20,endHz),t+seconds);
      g.gain.setValueAtTime(.0001,t);
-     g.gain.exponentialRampToValueAtTime(Math.max(.0001,volume),t+Math.min(.028,seconds*.35));
+     g.gain.exponentialRampToValueAtTime(Math.max(.0001,Math.min(.24,volume*1.20)),t+Math.min(.028,seconds*.35));
      g.gain.exponentialRampToValueAtTime(.0001,t+seconds);
      o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+seconds+.025);
    }catch(e){}
@@ -264,7 +264,7 @@
      f.frequency.setValueAtTime(1800,t);
      f.frequency.exponentialRampToValueAtTime(135,t+duration);
      g.gain.setValueAtTime(.0001,t);
-     g.gain.linearRampToValueAtTime(volume,t+.025);
+     g.gain.linearRampToValueAtTime(Math.min(.27,volume*1.18),t+.025);
      g.gain.exponentialRampToValueAtTime(.0001,t+duration);
      s.connect(f);f.connect(g);g.connect(a.destination);
      s.start(t);s.stop(t+duration+.02);
@@ -292,7 +292,7 @@
    const h=state.heat/100;
    const vol=playing?(.012+.017*h):starting?.008:0;
    const now=context.currentTime;
-   humGain.gain.setTargetAtTime(vol,now,playing?.14:.2);
+   humGain.gain.setTargetAtTime(vol*1.18,now,playing?.14:.2);
    humTone.frequency.setTargetAtTime(playing?240+h*360:220,now,.12);
    humOsc.frequency.setTargetAtTime(playing?64+h*43:59,now,.15);
    humHarmonic.frequency.setTargetAtTime(playing?128+h*84:119,now,.14);
